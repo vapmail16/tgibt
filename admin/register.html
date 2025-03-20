@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TGIBT</title>
+    <link rel="stylesheet" href="admin-styles.css">
+    <style>
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .register-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .books-section {
+            margin-top: 30px;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+
+        .book-entry {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .remove-book {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-book-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        button[type="submit"] {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button[type="submit"]:hover {
+            background: #0056b3;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .success-message {
+            color: #28a745;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-box">
+            <h2>TGIBT Author Registration</h2>
+            <form id="registerForm">
+                <!-- User Details -->
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <!-- Books Section -->
+                <div class="books-section">
+                    <h3>Books</h3>
+                    <button type="button" class="add-book-btn" id="addBookBtn">+ Add Book</button>
+                    <div id="booksContainer">
+                        <!-- Book entries will be added here -->
+                    </div>
+                </div>
+
+                <button type="submit">Register</button>
+            </form>
+            <div id="error-message" class="error-message"></div>
+            <div id="success-message" class="success-message"></div>
+            <p style="text-align: center; margin-top: 20px;">
+                Already have an account? <a href="login.html">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const booksContainer = document.getElementById('booksContainer');
+            const addBookBtn = document.getElementById('addBookBtn');
+            const registerForm = document.getElementById('registerForm');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+
+            // Function to create a new book entry
+            function createBookEntry() {
+                const bookEntry = document.createElement('div');
+                bookEntry.className = 'book-entry';
+                bookEntry.innerHTML = `
+                    <button type="button" class="remove-book" onclick="this.parentElement.remove()">&times;</button>
+                    <div class="form-group">
+                        <label>Book Title</label>
+                        <input type="text" name="bookTitle[]" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ISBN</label>
+                        <input type="text" name="isbn[]" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Price (₹)</label>
+                        <input type="number" name="price[]" required>
+                    </div>
+                `;
+                return bookEntry;
+            }
+
+            // Add first book entry by default
+            booksContainer.appendChild(createBookEntry());
+
+            // Add new book entry when clicking the add button
+            addBookBtn.addEventListener('click', () => {
+                booksContainer.appendChild(createBookEntry());
+            });
+
+            // Handle form submission
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errorMessage.textContent = '';
+                successMessage.textContent = '';
+
+                // Collect form data
+                const formData = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value,
+                    books: Array.from(document.querySelectorAll('.book-entry')).map(entry => ({
+                        title: entry.querySelector('[name="bookTitle[]"]').value,
+                        isbn: entry.querySelector('[name="isbn[]"]').value,
+                        price: entry.querySelector('[name="price[]"]').value
+                    }))
+                };
+
+                try {
+                    const response = await fetch('/api/users/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        successMessage.textContent = 'Registration successful! Redirecting to login...';
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 2000);
+                    } else {
+                        errorMessage.textContent = data.message || 'Registration failed. Please try again.';
+                    }
+                } catch (err) {
+                    console.error('Registration error:', err);
+                    errorMessage.textContent = 'An error occurred. Please try again.';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

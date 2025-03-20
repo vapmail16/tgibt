@@ -3,33 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TGIBT Admin Panel</title>
+    <title>TGIBT Dashboard</title>
     <link rel="stylesheet" href="admin-styles.css">
 </head>
 <body>
     <div class="admin-container">
         <header class="admin-header">
-            <h1>TGIBT Admin Panel</h1>
-            <nav class="admin-nav">
-                <button class="nav-btn active" data-section="events">Events</button>
-                <button class="nav-btn" data-section="books">Books</button>
-                <button class="nav-btn" data-section="testimonials">Testimonials</button>
+            <h1>TGIBT Dashboard</h1>
+            <nav class="admin-nav" id="adminNav">
+                <button class="nav-btn active" data-section="sales" data-role="all">Sales</button>
+                <button class="nav-btn admin-only" data-section="excel-upload" data-role="admin">Excel Upload</button>
+                <button class="nav-btn admin-only" data-section="events" data-role="admin">Events</button>
+                <button class="nav-btn admin-only" data-section="books" data-role="admin">Books</button>
+                <button class="nav-btn admin-only" data-section="testimonials" data-role="admin">Testimonials</button>
+                <button class="logout-btn" onclick="logout()">Logout</button>
             </nav>
         </header>
 
         <main>
-            <section id="events-section" class="content-section active">
+            <section id="sales-section" class="content-section active">
+                <h2>Sales Management</h2>
+                
+                <!-- Sales Records -->
+                <div class="sales-records">
+                    <h3>Sales Records</h3>
+                    
+                    <!-- Filters -->
+                    <div class="filters-section">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label>Month:</label>
+                                <select id="monthFilter" class="filter-input" onchange="applySalesFilters()">
+                                    <option value="">All</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label>Book:</label>
+                                <select id="bookFilter" class="filter-input" onchange="applySalesFilters()">
+                                    <option value="">All</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Author:</label>
+                                <select id="authorFilter" class="filter-input" onchange="applySalesFilters()">
+                                    <option value="">All</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Table -->
+                    <div class="sales-table-container">
+                        <table id="salesTable">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Book</th>
+                                    <th>Author</th>
+                                    <th>Event</th>
+                                    <th>Quantity</th>
+                                    <th>Sales Amount (₹)</th>
+                                    <th>Total Amount (₹)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody">
+                                <!-- Sales data will be populated here -->
+                            </tbody>
+                        </table>
+                        <div class="pagination">
+                            <button onclick="previousPage()" class="page-btn">&lt; Previous</button>
+                            <span id="pageInfo">Page 1 of 1</span>
+                            <button onclick="nextPage()" class="page-btn">Next &gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="excel-upload-section" class="content-section admin-only">
+                <h2>Excel Upload</h2>
+                <div class="excel-upload-container">
+                    <div class="template-download">
+                        <h3>Download Template</h3>
+                        <p>Download the Excel template to ensure correct data format:</p>
+                        <button onclick="downloadTemplate()" class="download-btn">
+                            Download Template
+                        </button>
+                    </div>
+
+                    <div class="upload-section">
+                        <h3>Upload Sales Data</h3>
+                        <p>Upload your Excel file with sales data:</p>
+                        <input type="file" id="excelFile" accept=".xlsx, .xls" class="file-input" />
+                        <button onclick="handleExcelUpload()" class="upload-btn">
+                            Upload Excel
+                        </button>
+                        <div id="uploadStatus" class="upload-status" style="display: none;"></div>
+                    </div>
+
+                    <div class="instructions">
+                        <h3>Instructions</h3>
+                        <ul>
+                            <li>Use the template provided for correct data format</li>
+                            <li>Required columns: Month, Book, Author, Event, Quantity, Sales Amount (₹)</li>
+                            <li>Month format should be YYYY-MM (e.g., 2024-03)</li>
+                            <li>Quantity must be a positive number</li>
+                            <li>Sales Amount must be provided in rupees (₹)</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="events-section" class="content-section admin-only">
                 <h2>Manage Events</h2>
                 <div id="events-list" class="items-list"></div>
             </section>
 
-            <section id="books-section" class="content-section">
+            <section id="books-section" class="content-section admin-only">
                 <h2>Manage Books</h2>
                 <button class="add-btn" onclick="addNewBook()">Add New Book</button>
                 <div id="books-list" class="items-list"></div>
             </section>
 
-            <section id="testimonials-section" class="content-section">
+            <section id="testimonials-section" class="content-section admin-only">
                 <h2>Manage Testimonials</h2>
                 <button class="add-btn" onclick="addNewTestimonial()">Add New Testimonial</button>
                 <div id="testimonials-list" class="items-list"></div>
@@ -44,6 +142,64 @@
         </div>
     </div>
 
+    <script>
+        // Check authentication and set up UI based on role
+        function checkAuth() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/admin/login.html';
+                return;
+            }
+
+            // Get user data and set up UI based on role
+            const user = JSON.parse(localStorage.getItem('adminUser'));
+            setupUIForRole(user.role);
+        }
+
+        // Set up UI based on user role
+        function setupUIForRole(role) {
+            // Hide admin-only elements if user is not admin
+            if (role !== 'admin') {
+                // Hide admin-only sections
+                document.querySelectorAll('[data-role="admin"]').forEach(el => {
+                    el.style.display = 'none';
+                });
+
+                // Show sales section by default
+                document.querySelector('#sales-section').classList.add('active');
+                
+                // Modify sales table for user view
+                modifySalesTableForUser();
+            }
+
+            // Update header based on role
+            document.querySelector('h1').textContent = 
+                role === 'admin' ? 'TGIBT Admin Dashboard' : 'TGIBT Sales Dashboard';
+        }
+
+        // Modify sales table for user view
+        function modifySalesTableForUser() {
+            const user = JSON.parse(localStorage.getItem('adminUser'));
+            
+            // Add user ID filter to sales API calls
+            window.originalFetchSales = window.fetchSales;
+            window.fetchSales = async function(filters = {}) {
+                filters.userId = user.id;
+                return originalFetchSales(filters);
+            };
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            window.location.href = '/admin/login.html';
+        }
+
+        // Check authentication on page load
+        checkAuth();
+    </script>
     <script src="admin-script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </body>
 </html> 

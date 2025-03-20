@@ -446,91 +446,71 @@ header {
 
 /* Store section */
 .store-section {
-    padding: 100px 0;
-    background: linear-gradient(rgba(29, 53, 87, 0.95), rgba(29, 53, 87, 0.95));
-    color: white;
-}
-
-.store-section .section-title {
-    color: white;
-}
-
-.store-section .section-title::after {
-    background-color: var(--primary-color);
+    padding: 80px 0;
+    background-color: var(--light-color);
 }
 
 .books-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-bottom: 40px;
 }
 
 .book-card {
     background: white;
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    max-width: 300px;
-    margin: 0 auto;
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
 }
 
 .book-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .book-image {
-    height: 200px;
+    position: relative;
+    padding-top: 140%; /* Maintain aspect ratio */
     overflow: hidden;
 }
 
 .book-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    transition: transform 0.3s ease;
+    object-fit: cover;
 }
 
 .book-details {
-    padding: 15px;
+    padding: 20px;
+    text-align: center;
 }
 
 .book-details h3 {
-    font-size: 1.1rem;
-    margin-bottom: 8px;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: var(--text-color);
 }
 
 .book-author {
-    font-size: 0.9rem;
     color: var(--secondary-color);
-    margin-bottom: 8px;
-}
-
-.book-description {
-    font-size: 0.95rem;
-    margin-bottom: 20px;
-    color: #666;
+    margin-bottom: 10px;
+    font-style: italic;
 }
 
 .book-price {
-    font-size: 1rem;
-    font-weight: bold;
+    font-weight: 600;
     color: var(--primary-color);
-    margin: 8px 0;
+    margin-bottom: 15px;
 }
 
 .buy-btn {
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.buy-btn i {
-    font-size: 1.2rem;
+    padding: 10px;
 }
 
 /* Testimonials section */
@@ -1033,7 +1013,8 @@ footer {
     }
     
     .books-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
     }
 
     .contact-container {
@@ -1083,6 +1064,15 @@ footer {
     .newsletter-form input,
     .newsletter-form button {
         border-radius: 50px;
+    }
+
+    .books-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .book-image {
+        padding-top: 120%;
     }
 }
 
@@ -1217,9 +1207,8 @@ footer {
 /* Responsive Enhancements */
 @media (max-width: 768px) {
     .books-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        padding: 15px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
     }
 
     .book-image {

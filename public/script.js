@@ -84,7 +84,12 @@ async function loadBooks() {
         }
 
         booksGrid.innerHTML = '';
-        books.forEach(book => {
+        
+        // Determine if we're on the homepage (featured books) or store page
+        const isHomepage = window.location.pathname === '/' || window.location.pathname === '/index.html';
+        const booksToDisplay = isHomepage ? books.slice(0, 6) : books;
+
+        booksToDisplay.forEach(book => {
             const bookCard = document.createElement('div');
             bookCard.className = 'book-card';
             bookCard.innerHTML = `
