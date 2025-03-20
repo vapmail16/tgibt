@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_USER=tgibt_user
+      - DB_PASSWORD=tgibt_1234
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=tgibt_db
+      - JWT_SECRET=a6c8b90710f86dc196128754a8d909121b6356cb81818f20aa239754e0aa1982ed8910221f9387664534d6a25e1fa2f6152f833a627d29134c088c49c499cbb9
+      - JWT_EXPIRES_IN=24h
+      - JWT_SECRET_PUBLIC=5d81d627db153570d990e98cbccbd21b3f1c33de9494d03411f113eda074b430e3a5fc77c9a54c71f6cf4c9868d57fc03a344a314f25cd3134abb4b332622396
+      - PORT=3000
+      - NODE_ENV=development
+    depends_on:
+      - db
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - tgibt-network
+
+  db:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=tgibt_user
+      - POSTGRES_PASSWORD=tgibt_1234
+      - POSTGRES_DB=tgibt_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./database/backup.sql:/docker-entrypoint-initdb.d/2-backup.sql
+    networks:
+      - tgibt-network
+
+volumes:
+  postgres_data:
+
+networks:
+  tgibt-network:
+    driver: bridge 
